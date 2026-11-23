@@ -1,0 +1,140 @@
+[
+    {
+        "id": "b02fa07905eab5c5",
+        "type": "tab",
+        "label": "Fluxo 2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "ee397b09666edd88",
+        "type": "mqtt-broker",
+        "name": "ESP32",
+        "broker": "broker.emqx.io",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "71eda0b552db433a",
+        "type": "mqtt in",
+        "z": "b02fa07905eab5c5",
+        "name": "",
+        "topic": "/topic/GPS0",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "ee397b09666edd88",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 390,
+        "y": 420,
+        "wires": [
+            [
+                "3e3687359d3a6436",
+                "eb57737f587e7bb3"
+            ]
+        ]
+    },
+    {
+        "id": "3e3687359d3a6436",
+        "type": "debug",
+        "z": "b02fa07905eab5c5",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "eb57737f587e7bb3",
+        "type": "function",
+        "z": "b02fa07905eab5c5",
+        "name": "function 1",
+        "func": "\n // CONFIGURACAO CALLMEBOT\n// Coloque seu numero com DDI 55 + DDD + numero\nconst telefone = \"5511987039785\";\nconst apiKey = \"3019713\";\n\n// RECEBER OS DADOS MQTT\nlet dados = msg.payload;\n\n// Converter JSON se chegar como texto\nif (typeof dados === \"string\") {\n    try {\n        dados = JSON.parse(dados);\n    } catch (erro) {\n        node.error(\"JSON MQTT invalido\", msg);\n        return null;\n    }\n}\n\n// VERIFICAR OS VALORES\nif (!dados ||\n    dados.pressao === undefined ||\n    dados.temperatura === undefined) {\n    node.error(\"Pressao ou temperatura ausente\", msg);\n    return null;\n}\n\n// MONTAR MENSAGEM WHATSAPP\nconst texto =\n    \"*Leitura do ESP32*\\n\\n\" +\n    \"Pressao: \" + dados.pressao + \" kPa\\n\" +\n    \"Temperatura: \" + dados.temperatura + \" °C\\n\\n\" +\n    \"Leitura enviada pelo botao GPIO 27.\";\n\n// CODIFICAR A MENSAGEM PARA URL\nconst mensagem = encodeURIComponent(texto);\n\n// MONTAR A URL DA API CALLMEBOT\nmsg.url =\n    \"https://api.callmebot.com/whatsapp.php\" +\n    \"?phone=\" + encodeURIComponent(telefone) +\n    \"&text=\" + mensagem +\n    \"&apikey=\" + encodeURIComponent(apiKey);\n\n// PREPARAR REQUISICAO HTTP\nmsg.method = \"GET\";\ndelete msg.payload;\n\n// ENVIAR PARA O PROXIMO NO\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 600,
+        "y": 340,
+        "wires": [
+            [
+                "d319003a1b2892c8"
+            ]
+        ]
+    },
+    {
+        "id": "d319003a1b2892c8",
+        "type": "http request",
+        "z": "b02fa07905eab5c5",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 800,
+        "y": 340,
+        "wires": [
+            [
+                "e9d1709eeaee0f03"
+            ]
+        ]
+    },
+    {
+        "id": "e9d1709eeaee0f03",
+        "type": "debug",
+        "z": "b02fa07905eab5c5",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1000,
+        "y": 340,
+        "wires": []
+    }
+]
